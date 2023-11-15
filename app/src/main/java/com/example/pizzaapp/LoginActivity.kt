@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.provider.ContactsContract.CommonDataKinds.Email
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,20 +26,28 @@ class LoginActivity : AppCompatActivity() {
         btnLogin.setOnClickListener {
             val intentLogin = Intent(this@LoginActivity, MainActivity::class.java)
             startActivity(intentLogin)
-        //login check
-        fun checkLogin(email:String, password:String):Boolean{
-            val columns = arrayOf(COLUMN_NAME)
-            val db = this.readableDatabase
-            //selection criteria
-            val selection = "$COLUMN_EMAIL = ? AND $COLUMN_PASSWORD = ?"
-            //selection arguments
-            val selectionArgs = arrayOf(email,password)
+            //event button login
+            btnLogin.setOnClickListener {
+                //object class databasehelper
+                val dataBaseHelper = DataBaseHelper(this)
 
-            val cursor = db.query(TABLE_ACCOUNT,// table to query
-            colums, //columns to return
-            selection,// )
+                val email = txtUsername.text.toString().trim()
+                val password = txtPassword.text.toString().trim()
+
+                //check login
+                val result:Boolean = dataBaseHelper.checkLogin(email,password)
+                if (result == true){
+                    Toast.makeText(this@LoginActivity, "Login Success",
+                        Toast.LENGTH_SHORT).show()
+                    val intentLogin = Intent(this@LoginActivity,
+                        MainActivity::class.java)
+                   startActivity(intentLogin)
+                }else{
+                    Toast.makeText(this@LoginActivity,"Login Failed, Try  Again !!!",
+                    Toast.LENGTH_SHORT).show()
+                }
+            }
 
         }
         }
     }
-}
