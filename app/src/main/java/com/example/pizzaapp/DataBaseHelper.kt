@@ -21,6 +21,22 @@ class DataBaseHelper(context: Context): SQLiteOpenHelper(
         private val COLUMN_NAME = "name"
         private val COLUMN_LEVEL = "level"
         private val COLUMN_PASSWORD = "password"
+
+        //table menu
+        private val TABLE_MENU = "menu"
+        //column menu table
+        private val COLUMN_ID_MENU = "idMenu"
+        private val COLUMN_NAMA_MENU = "menuName"
+        private val COLUMN_PRICE_MENU = "price"
+        private val COLUMN_IMAGE = "photo"
+
+        //create table menu sql query
+        private val CREATE_MENU_TABLE = ("CREATE TABLE " + TABLE_MENU + "("
+                + COLUMN_ID_MENU + "INT PRIMARY KEY,"+ COLUMN_NAMA_MENU +" TEXT, "
+                + COLUMN_PRICE_MENU + " INT,"+ COLUMN_IMAGE +"BLOB")
+
+        //drop table menu sql query
+        private val DROP_MENU_TABLE = "DROP TABLE IF EXISTS $TABLE_MENU"
     }
 
     //creat table account sql query
