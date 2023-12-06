@@ -16,7 +16,7 @@ class AddMenuActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add_menu)
 
         //hide title bar
-        supportActionBar()?.hide()
+       getSupportActionBar()?.hide()
 
         override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -32,7 +32,7 @@ class AddMenuActivity : AppCompatActivity() {
             val buttonAdd : Button = view.findViewById(R.id.buttonAddMenu)
             //event saat button add menu di klik
             buttonAdd.setOnClickListener {
-                requireActivity().run {
+                requireActivity().run{
                     startActivity(Intent(this, AddMenuActivity::class.java))
                     finish()
                 }
