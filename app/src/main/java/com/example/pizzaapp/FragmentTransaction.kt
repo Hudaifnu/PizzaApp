@@ -5,6 +5,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import java.nio.ByteOrder
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -36,8 +40,20 @@ class FragmentTransaction : Fragment() {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_transaction, container, false)
     }
+    fun display
+    //set layout recycle view
+    rvTransasksi.layoutMangger = LinearLayoutManger(activity)
+    rvTransaksi.adapter = TransaksiAdapter()
 
+    txtOrder.text = TransaksiAdapter.harga.toString()
+    txtTax.text = (TransaksiAdapter.harga * 0.10).toString()
+    txtTotal.text = (TransaksiAdapter.harga + (TransaksiAdapter.harga * 0.10)).toString()
     companion object {
+        lateinit var rvTransaksi : RecyclerView
+        lateinit var txtOrder : TextView
+        lateinit var txtTax : TextView
+        lateinit var txtTotal : TextView
+        lateinit var buttonpay : Button
         /**
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.

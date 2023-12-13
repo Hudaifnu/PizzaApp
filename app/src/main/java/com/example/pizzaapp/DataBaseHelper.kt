@@ -8,12 +8,15 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Bitmap
 import android.widget.Toast
 import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.coroutines.jvm.internal.CompletedContinuation.context
 
 class DataBaseHelper(context: Context): SQLiteOpenHelper(
     context,DATABASE_NAME, null,DATABASE_VERSION
 ) {
     companion object {
+
         private val DATABASE_NAME = "pizza"
         private val DATABASE_VERSION = 1
 
@@ -34,6 +37,22 @@ class DataBaseHelper(context: Context): SQLiteOpenHelper(
         private val COLUMN_PRICE_MENU = "price"
         private val COLUMN_IMAGE = "photo"
 
+        //table transaksi
+        private val TABLE_TRANS = "transaksi"
+        //column tabel transaksi
+        private val COLUMN_ID_TRANS = "idTransaksi"
+        private val COLUMN_TGL = "tanggal"
+        private val COLUMN_USER = "user"
+
+        //table detail transaksi
+        private val TABLE_DET_TRANSACTION = "detailTrans"
+        //column table detail trans
+        private val COLUMN_ID_DET_TRX = "idDetailTrx"
+        private val COLUMN_ID_TRX = "idTransaksi"
+        private val COLUMN_ID_PESAN = "idMenu"
+        private val COLUMN_HARGA_PESAN = "harga"
+        private val COLUMN_JUMLAH = "jumlah"
+
         //create table menu sql query
         private val CREATE_MENU_TABLE = ("CREATE TABLE " + TABLE_MENU + "("
                 + COLUMN_ID_MENU + "INT PRIMARY KEY,"+ COLUMN_NAMA_MENU +" TEXT, "
@@ -41,6 +60,23 @@ class DataBaseHelper(context: Context): SQLiteOpenHelper(
 
         //drop table menu sql query
         private val DROP_MENU_TABLE = "DROP TABLE IF EXISTS $TABLE_MENU"
+        //create table transaksi sql query
+        private val CREATE_TRANSACTION_TABLE = ("CREATE TABLE " + TABLE_TRANS + "("
+                + COLUMN_ID_TRANS + " INT PRIMARY KEY, "+ COLUMN_TGL +" TEXT, "
+                + COLUMN_USER + " TEXT)")
+
+        //drop table transaksi sql query
+        private val DROP_TRANSACTION_TABLE = "DROP TABLE IF EXISTS $TABLE_TRANS"
+
+        //create table detail transaksi sql query
+        private val CREATE_DET_TRANS_TABLE = ("CREATE TABLE " + TABLE_DET_TRANSACTION + "("
+                + COLUMN_ID_DET_TRX + " INT PRIMARY KEY, "+ COLUMN_ID_TRX +" INT, "
+                + COLUMN_ID_PESAN + " INT, "+ COLUMN_HARGA_PESAN + " INT, "
+                + COLUMN_JUMLAH + " INT)")
+
+        //drop table detail transaksi sql query
+        private val DROP_DET_TRANS_TABLE = "DROP TABLE IF EXISTS $TABLE_DET_TRANSACTION"
+
     }
 
     //creat table account sql query
@@ -53,13 +89,21 @@ class DataBaseHelper(context: Context): SQLiteOpenHelper(
 
     override fun onCreate(p0: SQLiteDatabase?) {
         p0?.execSQL(CREATE_ACCOUNT_TABLE)
+        p0?.execSQL(CREATE_MENU_TABLE)
+        p0?.execSQL(CREATE_TRANSACTION_TABLE)
+        p0?.execSQL(CREATE_DET_TRANS_TABLE)
     }
 
     override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
         p0?.execSQL(DROP_ACCOUNT_TABLE)
         onCreate(p0)
+        p0?.execSQL(DROP_TRANSACTION_TABLE)
+        p0?.execSQL(DROP_DET_TRANS_TABLE)
+        p0?.execSQL(DROP_MENU_TABLE)
+
 
         }
+
     fun checkLogin(email: String, password: String): Boolean {
         val colums = arrayOf(COLUMN_NAME)
         val db = this.readableDatabase
@@ -143,6 +187,77 @@ class DataBaseHelper(context: Context): SQLiteOpenHelper(
         if (result==(0).toLong()){
             Toast.makeText(context,"ADD menu Failed", Toast.LENGTH_SHORT).show()
         }
+
+    }
+    //add new transaksi
+    @SuppressLint("Range")
+    fun addTransaction(){
+        val dbInsert = this.writableDatabase
+        val dbSelect = this.readableDatabase
+        //declare var
+        var lastIdTrans = 0
+        var lastIdDetail = 0
+        var newIdTrans = 0
+        var newIdDetail = 0
+        val values = ContentValues()
+        //get last idTransaksi
+        val cursorTrans: Cursor = dbSelect.rawQuery(
+            "SELECT  * FROM $TABLE_TRANS", null)
+
+        val cursorDetail: Cursor = dbSelect.rawQuery(
+            "SELECT *  FROM $TABLE_DET_TRANSACTION", null)
+
+        if (cursorTrans.moveToLast()) {
+            lastIdTrans = cursorTrans.getInt(0) //to get id, 0 is the column index
+        }
+
+        if (cursorDetail.moveToLast()) {
+            lastIdDetail = cursorDetail.getInt(0) //to get id, 0 is the column index
+        }
+
+
+        //set data
+        newIdTrans = lastIdTrans + 1
+        val sdf = SimpleDateFormat("yyyy-MM-dd")
+        val tanggal = sdf.format(Date())
+        val username = FragmentProfile.email
+
+
+
+        //insert data transaksi
+        values.put(COLUMN_ID_TRANS, newIdTrans)
+        values.put(COLUMN_TGL, tanggal)
+        values.put(COLUMN_USER, username)
+        val result = dbInsert.insert(TABLE_TRANS,null, values)
+        //show message
+        if (result==(0).toLong()){
+            Toast.makeText(context, "Add transaction Failed", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Add transaction Success",Toast.LENGTH_SHORT).show()
+        }
+
+        newIdDetail = lastIdDetail + 1
+        var i = 0
+        val values2 = ContentValues()
+        while(i < TransaksiAdapter.listId.count()){
+            values2.put(COLUMN_ID_DET_TRX, newIdDetail)
+            values2.put(COLUMN_ID_TRX, newIdTrans)
+            values2.put(COLUMN_ID_PESAN, TransaksiAdapter.listId[i])
+            values2.put(COLUMN_HARGA_PESAN, TransaksiAdapter.listHarga[i])
+            values2.put(COLUMN_JUMLAH, TransaksiAdapter.listJumlah[i])
+            val result2 = dbInsert.insert(TABLE_DET_TRANSACTION,null, values2)
+            //show message
+            if (result2==(0).toLong()){
+                Toast.makeText(context, "Add detail Failed", Toast.LENGTH_SHORT).show()
+            }
+            else {
+                Toast.makeText(context, "Add detail Success",Toast.LENGTH_SHORT).show()
+            }
+            newIdDetail += 1
+            i+=1
+        }
+        dbSelect.close()
+        dbInsert.close()
     }
 }
 
